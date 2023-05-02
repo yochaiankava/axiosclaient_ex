@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+</head>
+
+<body>
+    <table id="petsTable" class="table table-sm table-dark">
+    </table>
+    pet Name: <input id="petName" placeholder="input pet name">
+    <br>
+    Pet Type:<input id="petType" placeholder="input pet type">
+    <br>
+    Pet Age:<input id="petAge" placeholder="input pet age">
+    <br>
+
+    <button onclick="addPet()">Add pet</button>
+    <script>
+        axios.get('http://localhost:3000/pets').then(res => {
+            console.log(res.data);
+            const pets = res.data
+            // res.data.map(student => console.log(`student is: ${student.name}`))
+
+            const resultHTML = pets.map(pet => `<tr>
+            <td>${pet.id}</td>
+            <td>${pet.name}</td>
+            <td>${pet.type}</td>
+            <td>${pet.age}</td>
+            <td>
+                <button onclick="deletePet(${pet.id})">Delete</button>
+                <button onclick="updatePet(${pet.id})">Update</button>
+            </td>
+            </tr>`).join('');
+
+            petsTable.innerHTML = "<tr><th>pet ID</th><th>pet Name</th><th>Type</th><th>Age</th><th><th/></tr>" + resultHTML;
+
+        })
+
+
+
+        function addPet() {
+            console.log('adding pet');
+            // Get the input values
+            const petNameValue = petName.value.trim();
+            const petTypeValue = petType.value.trim();
+            const petAgeValue = petAge.value.trim();
+
+            // Check if the values are not empty
+            if (petNameValue !== '' && petTypeValue !== '' && petAgeValue !== '') {
+                // Create a new pet object
+                const newPet = {
+                    name: petNameValue,
+                    type: petTypeValue,
+                    age: petAgeValue
+                };
+
+                // Send a POST request to add the new pet
+                axios.post('http://localhost:3000/pets', newPet)
+                    .then(res => {
+                        console.log(res.data);
+                    });
+            } else {
+                // Display an error message if any of the input fields are empty
+                console.log("Please fill in all the fields");
+                alert('Please fill in all the fields');
+            }
+        }
+        function deletePet(petID) {
+            console.log('delete pet', petID);
+            axios.delete(`http://localhost:3000/pets/${petID}`)
+                .then(res => {
+                    console.log(res.data);
+                })
+            }
+
+
+                    function updatePet(petID) {
+                        console.log('update pet', petID);
+
+                        // Get the input values
+                        const petNameValue = petName.value.trim();
+                        const petTypeValue = petType.value.trim();
+                        const petAgeValue = petAge.value.trim();
+
+                        // Check if fields have data
+                        if (petNameValue || petTypeValue || petAgeValue) {
+                            // Create object with updated fields
+                            const updatedFields = Object.assign({}, petNameValue && { name: petNameValue }, petTypeValue && { type: petTypeValue }, petAgeValue && { age: petAgeValue });
+
+                            // Update pet in the database
+                            axios.put(`http://localhost:3000/pets/${petID}`, updatedFields)
+                                .then(res => {
+                                    console.log(res.data);
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                });
+                        } else {
+                            // Display an error message if any of the input fields are empty
+                            console.log("Please fill in at least one field");
+                            alert('Please fill in at least one field');
+                        }
+                    }
+
+    </script>
+</body>
+
+</html>
